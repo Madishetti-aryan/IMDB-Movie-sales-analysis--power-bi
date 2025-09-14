@@ -1,0 +1,50 @@
+-- Paste these measures into your Power BI model (Model -> New measure)
+Distinct Movies = DISTINCTCOUNT( MovieMaster[Title] )
+
+Total Revenue (M) = SUM( MovieMaster[Revenue (Millions)] )
+
+Total Revenue USD = [Total Revenue (M)] * 1000000
+
+Average Rating = AVERAGE( MovieMaster[Rating] )
+
+Average Runtime = AVERAGE( MovieMaster[Runtime (Minutes)] )
+
+Average Metascore = AVERAGE( MovieMaster[Metascore] )
+
+Total Votes = SUM( MovieMaster[Votes] )
+
+Max Movie Revenue (M) = MAX( MovieMaster[Revenue (Millions)] )
+
+Avg Revenue per Movie (M) = AVERAGE( MovieMaster[Revenue (Millions)] )
+
+Revenue YoY (M) =
+VAR _year = SELECTEDVALUE( MovieMaster[Year] )
+VAR PrevYearRev = CALCULATE( [Total Revenue (M)], FILTER( ALL( MovieMaster[Year] ), MovieMaster[Year] = _year - 1 ) )
+RETURN IF( ISBLANK( PrevYearRev), BLANK(), [Total Revenue (M)] - PrevYearRev )
+
+Revenue YoY % =
+DIVIDE( [Revenue YoY (M)], CALCULATE( [Total Revenue (M)], FILTER( ALL( MovieMaster[Year] ), MovieMaster[Year] = SELECTEDVALUE( MovieMaster[Year] ) - 1 ) ), 0 )
+
+Running Revenue (M) =
+CALCULATE( [Total Revenue (M)], FILTER( ALL( MovieMaster[Year] ), MovieMaster[Year] <= MAX( MovieMaster[Year] ) ) )
+
+Top 10 Revenue (M) =
+VAR TopTable = TOPN( 10, ALL( MovieMaster ), MovieMaster[Revenue (Millions)], DESC )
+RETURN CALCULATE( [Total Revenue (M)], TopTable )
+
+Others Revenue (M) = [Total Revenue (M)] - [Top 10 Revenue (M)]
+
+Movie Revenue % = DIVIDE( SUM( MovieMaster[Revenue (Millions)] ), [Total Revenue (M)], 0 )
+
+Revenue by Genre (M) =
+SUMX(
+    VALUES( MovieGenre[MovieID] ),
+    CALCULATE( SUM( MovieMaster[Revenue (Millions)] ) )
+)
+
+Corr_Revenue_Rating =
+VAR MeanX = AVERAGE( MovieMaster[Revenue (Millions)] )
+VAR MeanY = AVERAGE( MovieMaster[Rating] )
+VAR Num = SUMX( MovieMaster, ( MovieMaster[Revenue (Millions)] - MeanX ) * ( MovieMaster[Rating] - MeanY ) )
+VAR Den = SQRT( SUMX( MovieMaster, ( MovieMaster[Revenue (Millions)] - MeanX ) ^ 2 ) * SUMX( MovieMaster, ( MovieMaster[Rating] - MeanY) ^ 2 ) )
+RETURN IF( Den = 0, BLANK(), DIVIDE( Num, Den ) )
