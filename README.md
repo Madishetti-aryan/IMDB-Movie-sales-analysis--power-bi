@@ -35,7 +35,7 @@ DAX (Data Analysis Expressions) → Custom measures and calculated columns
 
 🎭 Genre Distribution → Most popular genres based on count and revenue
 
-👥 Votes & Popularity → Average votes received by movies per year
+👥 Votes & Popularity → Average votes received by movies per year.
 
 
 
